@@ -2,856 +2,855 @@
 <html lang="pt-br">
 
 <head>
-	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>Fishing</title>
-	<link rel="stylesheet" href="./css/style.css">
-	<style>
-		@import url('https://fonts.googleapis.com/css2?family=Bungee+Spice&display=swap');
-	</style>
-	<link rel="manifest" href="./manifest.json" />
-	<link rel="shortcut icon" href="./icon/maskable_icon_x48.png" type="image/png">
-	<link rel="icon" href="./icon/maskable_icon_x48.png" type="image/png">
-	<script>
-		if ('serviceWorker' in navigator) {
-			navigator.serviceWorker.register('./sw.js')
-				.then(function () { console.log('service worker registered'); })
-				.catch(function () { console.log('service worker failed'); });
-		}
-	</script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fishing</title>
+    <link rel="stylesheet" href="./css/style.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Bungee+Spice&display=swap');
+    </style>
+    <link rel="manifest" href="./manifest.json">
+    <link rel="shortcut icon" href="./icon/maskable_icon_x48.png" type="image/png">
+    <link rel="icon" href="./icon/maskable_icon_x48.png" type="image/png">
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('./sw.js')
+                .then(function () { console.log('service worker registered'); })
+                .catch(function () { console.log('service worker failed'); });
+        }
+    </script>
 </head>
 
 <body>
-	<audio id="surprise" loop>
-		<source src="./sons/surprise.mp3">
-	</audio>
-	<audio id="grunt">
-		<source src="./sons/grunt.m4a">
-	</audio>
-	<audio id="gasp">
-		<source src="./sons/gasp.m4a">
-	</audio>
-	<audio id="hehee">
-		<source src="./sons/fish.m4a">
-	</audio>
-	<div id="frame">
-		<div class="window">
-			<div class="fundo" id="fundo">
-				<div id="playstats">
-					<div id="timer"></div>
-					<div id="score">Score:</div>
-				</div>
-				<div id="botoes">
-					<div class="button" id="MoveBLeft">
-					</div>
-					<div class="button" id="DropHook"></div>
-					<div class="button" id="MoveBRight"></div>
-				</div>
-				<div id="mensagem">Clique para começar o jogo.</div>
-				<button type="button" onclick="resetGame()" id="restart">Clique aqui para reiniciar o jogo.
-			</div>
-			<div id="boat">
-				<div id="hook">
-					<div id="rope"></div>
-				</div>
-			</div>
-		</div>
-	</div>
-	</div>
-	<script>
-		let score = document.getElementById('score');
-		let scorePoints = 0
-		let game = "ongoing";
-		let fisguei = false;
-		let call;
-		let drop;
-		let HS1 = localStorage.getItem("HS1");
-		let HS2 = localStorage.getItem("HS2");
-		let HS3 = localStorage.getItem("HS3");
-		let newHS;
-		score.innerHTML = `HI-Score: ${HS1} - Score: ${scorePoints}`
-		//TIMER
-		function startgame() {
-			body.removeEventListener("click", startgame);
-			scorePoints = 0;
-			newHS = false
-			score.innerHTML = `HI-Score: ${HS1} - Score: ${scorePoints}`
-			document.getElementById("surprise").play();
-			document.getElementById("mensagem").style.display = "none";
-			document.getElementById("mensagem").innerHTML = "AGUARDE O ANZOL VOLTAR PARA TENTAR DENOVO."
-			document.getElementById("botoes").style.display = "flex";
-			const timer = document.querySelector("#timer");
-			let timeSecond = 300;
-			displayTime(timeSecond);
-			function displayTime(time) {
-				const min = Math.floor(time / 60);
-				const sec = Math.floor(time % 60);
-				timer.innerHTML = `${min < 10 ? '0' : ''}${min}:${sec < 10 ? '0' : ''}${sec}`
-			}
-			const countDown = setInterval(() => {
-				timeSecond--;
-				displayTime(timeSecond);
-				if (timeSecond <= 0 || timeSecond < 1) {
-					endTime();
-					clearInterval(countDown);
-				}
-			}, 1000)
-			function endTime() {
-				timer.innerHTML = "TIME OUT"
-				highscore();
-				if (newHS == true) {
-					score.innerHTML = `NEW RECORD!!! - 1st Place: ${HS1}<br>2nd Place: ${HS2}<br>3rd Place: ${HS3}`;
-				} else {
-					score.innerHTML = `1st Place: ${HS1}<br>2nd Place: ${HS2}<br>3rd Place: ${HS3}`;
-				}
-				localStorage.setItem("HS1", HS1);
-				localStorage.setItem("HS2", HS2);
-				localStorage.setItem("HS3", HS3);
-				document.getElementById("mensagem").innerHTML = "Aguarde 10 segundos para reiniciar o jogo."
-				document.getElementById("botoes").style.display = "none";
-				document.getElementById("mensagem").style.display = "flex";
-				clearInterval(drop);
-				clearInterval(call);
-				rope.style.height = null;
-				hook.style.top = null;
-				rope.style.top = null;
-				fisguei = false;
-				let resetAvailable = setTimeout("buttonAppear()", 10000);
-				game = "finished";
-				document.getElementById("hehee").play();
-			}
-		}
-		function highscore() {
-			if (!HS1) {
-				HS1 = 0;
-			}
-			if (!HS2) {
-				HS2 = 0;
-			}
-			if (!HS3) {
-				HS3 = 0;
-			}
-			if ((scorePoints > HS1)) {
-				HS3 = HS2;
-				HS2 = HS1;
-				HS1 = scorePoints;
-				newHS = true;
-			} else {
-				if ((scorePoints > HS2) && (scorePoints < HS1)) {
-					HS3 = HS2;
-					HS2 = scorePoints;
-				} else {
-					if ((scorePoints > HS3) && (scorePoints < HS2)) {
-						HS3 = scorePoints;
-					}
-				}
-			}
-		}
-		function resetGame() {
-			game = "ongoing"
-			document.getElementById("restart").style.display = "none";
-			startgame()
-		}
-		function buttonAppear() {
-			document.getElementById("restart").style.display = "flex";
-			document.getElementById("mensagem").style.display = "none";
-		}
-		//Make Boat move
-		let lMove = false;
-		let rMove = false;
-		let movementR;
-		let movementL;
-		document.getElementById("MoveBRight").onmousedown = () => { move('right') };
-		document.getElementById("MoveBRight").ontouchstart = () => { move('right') };
-		document.getElementById("MoveBRight").onmouseup = () => { stop() };
-		document.getElementById("MoveBRight").ontouchend = () => { stop() };
-		document.getElementById("MoveBLeft").onmousedown = () => { move('left') };
-		document.getElementById("MoveBLeft").ontouchstart = () => { move('left') };
-		document.getElementById("MoveBLeft").onmouseup = () => { stop() };
-		document.getElementById("MoveBLeft").ontouchend = () => { stop() };
-		function move(direction) {
-			switch (direction) {
-				case "right":
-					movementR = setInterval("movedireita()", 15);
-					break;
-				case "left":
-					movementL = setInterval("moveesquerda()", 15);
-					break;
-			}
-		}
-		function stop() {
-			if (movementR != NaN) {
-				clearInterval(movementR);
-			}
-			if (movementL != NaN) {
-				clearInterval(movementL);
-			}
-			rMove = false;
-			lMove = false;
-		}
-		function movedireita() {
-			rMove = true;
-			let boatLeft = parseInt(getComputedStyle(boat).left);
-			let fundoWidth = parseInt(getComputedStyle(fundo).width);
-			let boatWidth = parseInt(getComputedStyle(boat).width);
-			if ((boatLeft + 5) > (fundoWidth - boatWidth)) {
-				boat.style.left = fundoWidth - boatWidth;
-			} else {
-				boat.style.left = boatLeft + 5;
-			}
-		}
-		function moveesquerda() {
-			lMove = true;
-			let boatLeft = parseInt(getComputedStyle(boat).left)
-			if ((boatLeft - 5) < 0) {
-				boat.style.left = 0
-			} else {
-				boat.style.left = boatLeft - 5;
-			}
-		}
-		if ((rMove == true) && (lMove == true)) {
-			stop();
-		}
-		//Hook Down
-		document.getElementById("DropHook").onclick = () => {
-			drop = setInterval("hookDown()", 15)
-		};
-		function hookDown() {
-			if (game == "ongoing") {
-				document.getElementById("botoes").style.display = "none";
-				document.getElementById("mensagem").style.display = "flex";
-				let hookHeight = parseInt(getComputedStyle(hook).height) + parseInt(getComputedStyle(boat).top);
-				let hookTop = parseInt(getComputedStyle(hook).top);
-				let fundoBottom = parseInt(getComputedStyle(fundo).padding);
-				let ropeHeight = parseInt(getComputedStyle(rope).height);
-				let ropeTop = parseInt(getComputedStyle(rope).top);
-				if ((hookTop + 5) > (fundoBottom - hookHeight)) {
-					hook.style.top = fundoBottom - hookHeight;
-				} else {
-					hook.style.top = hookTop + 5;
-					rope.style.top = ropeTop - 5;
-					rope.style.height = ropeHeight + 5;
-				}
-				if (hookTop == (fundoBottom - hookHeight)) {
-					let gruntChance = Math.floor(Math.random() * 10;
-					if((gruntChance == 4)||(gruntChance==8)){
-					document.getElementById("grunt").play();
-					}
-					fisguei = "return";
-					clearInterval(drop);
-					call = setInterval("Recall()", 15)
-				}
-			}
-		}
-		function Recall() {
-			let hookTop = parseInt(getComputedStyle(hook).top);
-			let hookSpot = parseInt(getComputedStyle(boat).height);
-			let ropeHeight = parseInt(getComputedStyle(rope).height);
-			let ropeTop = parseInt(getComputedStyle(rope).top);
-			if ((hookTop - 5) <= (hookSpot)) {
-				hook.style.top = null;
-			} else {
-				hook.style.top = hookTop - 5;
-				rope.style.top = ropeTop + 5;
-				rope.style.height = ropeHeight - 5;
-			}
-			if (parseInt(hookTop) == hookSpot) {
-				rope.style.height = null;
-				rope.style.top = null;
-				fisguei = false;
-				if (game == "ongoing") {
-					document.getElementById("botoes").style.display = "flex";
-					document.getElementById("mensagem").style.display = "none";
-					clearInterval(call);
-				}
-			}
-		}
-		//Create fish
-		function fish(color) {
-			let fish = document.createElement("div");
-			let fishHit = document.createElement("div");
-			document.getElementById("fundo").appendChild(fish);
-			fish.classList.add("peixe");
-			fishPosition(fish);
-			switch (color) {
-				case "red":
-					fish.setAttribute("id", "red");
-					redSPD = Math.ceil(Math.random() * 3 + 3);
-					FSred = setInterval("redFSwimR()", redSPD);
-					break;
-				case "orange":
-					fish.setAttribute("id", "orange");
-					orangeSPD = Math.ceil(Math.random() * 3 + 14);
-					FSorange = setInterval("orangeFSwimR()", orangeSPD);
-					break;
-				case "yellow":
-					fish.setAttribute("id", "yellow");
-					yellowSPD = Math.ceil(Math.random() * 3 + 18);
-					FSyellow = setInterval("yellowFSwimR()", yellowSPD);
-					break;
-				case "green":
-					fish.setAttribute("id", "green");
-					greenSPD = Math.ceil(Math.random() * 3);
-					FSgreen = setInterval("greenFSwimR()", greenSPD);
-					break;
-				case "blue":
-					fish.setAttribute("id", "blue");
-					blueSPD = Math.ceil(Math.random() * 3 + 8);
-					FSblue = setInterval("blueFSwimR()", blueSPD);
-					break;
-				case "purple":
-					fish.setAttribute("id", "purple");
-					purpleSPD = Math.ceil(Math.random() * 3 + 16);
-					FSpurple = setInterval("purpleFSwimR()", purpleSPD);
-					break;
-				case "black":
-					fish.setAttribute("id", "black");
-					blackSPD = Math.ceil(Math.random() * 3 + 10);
-					FSblack = setInterval("blackFSwimR()", blackSPD);
-					break;
-				case "white":
-					fish.setAttribute("id", "white");
-					whiteSPD = Math.ceil(Math.random() * 3 + 12);
-					FSwhite = setInterval("whiteFSwimR()", whiteSPD);
-					break;
-			}
-		}
-		function fishPosition(fish) {
-			fish.style.left = parseInt(Math.random() * 100) + "%"
-		}
-		function redFSwimR() {
-			if (game == "ongoing") {
-				let redLeft = parseInt(getComputedStyle(red).left);
-				let fundoWidth = parseInt(getComputedStyle(fundo).width);
-				let redWidth = parseInt(getComputedStyle(red).width);
-				let hookX = parseInt(getComputedStyle(hook).left) + parseInt(getComputedStyle(boat).left);
-				let redTop = parseInt(getComputedStyle(red).top)
-				let hookY = parseInt(getComputedStyle(hook).top) + parseInt(getComputedStyle(boat).top)
+    <audio id="surprise" loop>
+        <source src="./sons/surprise.mp3">
+    </audio>
+    <audio id="grunt">
+        <source src="./sons/grunt.m4a">
+    </audio>
+    <audio id="gasp">
+        <source src="./sons/gasp.m4a">
+    </audio>
+    <audio id="hehee">
+        <source src="./sons/fish.m4a">
+    </audio>
+    <div id="frame">
+        <div class="window">
+            <div class="fundo" id="fundo">
+                <div id="playstats">
+                    <div id="timer"></div>
+                    <div id="score">Score:</div>
+                </div>
+                <div id="botoes">
+                    <div class="button" id="MoveBLeft">
+                    </div>
+                    <div class="button" id="DropHook"></div>
+                    <div class="button" id="MoveBRight"></div>
+                </div>
+                <div id="mensagem">Clique para começar o jogo.</div>
+                <button type="button" onclick="resetGame()" id="restart">Clique aqui para reiniciar o jogo.</button>
+            </div>
+            <div id="boat">
+                <div id="hook">
+                    <div id="rope"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        let score = document.getElementById('score');
+        let scorePoints = 0
+        let game = "ongoing";
+        let fisguei = false;
+        let call;
+        let drop;
+        let HS1 = localStorage.getItem("HS1");
+        let HS2 = localStorage.getItem("HS2");
+        let HS3 = localStorage.getItem("HS3");
+        let newHS;
+        score.innerHTML = `HI-Score: ${HS1} - Score: ${scorePoints}`
+        //TIMER
+        function startgame() {
+            body.removeEventListener("click", startgame);
+            scorePoints = 0;
+            newHS = false
+            score.innerHTML = `HI-Score: ${HS1} - Score: ${scorePoints}`
+            document.getElementById("surprise").play();
+            document.getElementById("mensagem").style.display = "none";
+            document.getElementById("mensagem").innerHTML = "AGUARDE O ANZOL VOLTAR PARA TENTAR DENOVO."
+            document.getElementById("botoes").style.display = "flex";
+            const timer = document.querySelector("#timer");
+            let timeSecond = 300;
+            displayTime(timeSecond);
+            function displayTime(time) {
+                const min = Math.floor(time / 60);
+                const sec = Math.floor(time % 60);
+                timer.innerHTML = `${min < 10 ? '0' : ''}${min}:${sec < 10 ? '0' : ''}${sec}`
+            }
+            const countDown = setInterval(() => {
+                timeSecond--;
+                displayTime(timeSecond);
+                if (timeSecond <= 0 || timeSecond < 1) {
+                    endTime();
+                    clearInterval(countDown);
+                }
+            }, 1000)
+            function endTime() {
+                timer.innerHTML = "TIME OUT"
+                highscore();
+                if (newHS == true) {
+                    score.innerHTML = `NEW RECORD!!! - 1st Place: ${HS1}<br>2nd Place: ${HS2}<br>3rd Place: ${HS3}`;
+                } else {
+                    score.innerHTML = `1st Place: ${HS1}<br>2nd Place: ${HS2}<br>3rd Place: ${HS3}`;
+                }
+                localStorage.setItem("HS1", HS1);
+                localStorage.setItem("HS2", HS2);
+                localStorage.setItem("HS3", HS3);
+                document.getElementById("mensagem").innerHTML = "Aguarde 10 segundos para reiniciar o jogo."
+                document.getElementById("botoes").style.display = "none";
+                document.getElementById("mensagem").style.display = "flex";
+                clearInterval(drop);
+                clearInterval(call);
+                rope.style.height = null;
+                hook.style.top = null;
+                rope.style.top = null;
+                fisguei = false;
+                let resetAvailable = setTimeout("buttonAppear()", 10000);
+                game = "finished";
+                document.getElementById("hehee").play();
+            }
+        }
+        function highscore() {
+            if (!HS1) {
+                HS1 = 0;
+            }
+            if (!HS2) {
+                HS2 = 0;
+            }
+            if (!HS3) {
+                HS3 = 0;
+            }
+            if ((scorePoints > HS1)) {
+                HS3 = HS2;
+                HS2 = HS1;
+                HS1 = scorePoints;
+                newHS = true;
+            } else {
+                if ((scorePoints > HS2) && (scorePoints < HS1)) {
+                    HS3 = HS2;
+                    HS2 = scorePoints;
+                } else {
+                    if ((scorePoints > HS3) && (scorePoints < HS2)) {
+                        HS3 = scorePoints;
+                    }
+                }
+            }
+        }
+        function resetGame() {
+            game = "ongoing"
+            document.getElementById("restart").style.display = "none";
+            startgame()
+        }
+        function buttonAppear() {
+            document.getElementById("restart").style.display = "flex";
+            document.getElementById("mensagem").style.display = "none";
+        }
+        //Make Boat move
+        let lMove = false;
+        let rMove = false;
+        let movementR;
+        let movementL;
+        document.getElementById("MoveBRight").onmousedown = () => { move('right') };
+        document.getElementById("MoveBRight").ontouchstart = () => { move('right') };
+        document.getElementById("MoveBRight").onmouseup = () => { stop() };
+        document.getElementById("MoveBRight").ontouchend = () => { stop() };
+        document.getElementById("MoveBLeft").onmousedown = () => { move('left') };
+        document.getElementById("MoveBLeft").ontouchstart = () => { move('left') };
+        document.getElementById("MoveBLeft").onmouseup = () => { stop() };
+        document.getElementById("MoveBLeft").ontouchend = () => { stop() };
+        function move(direction) {
+            switch (direction) {
+                case "right":
+                    movementR = setInterval("movedireita()", 15);
+                    break;
+                case "left":
+                    movementL = setInterval("moveesquerda()", 15);
+                    break;
+            }
+        }
+        function stop() {
+            if (movementR != NaN) {
+                clearInterval(movementR);
+            }
+            if (movementL != NaN) {
+                clearInterval(movementL);
+            }
+            rMove = false;
+            lMove = false;
+        }
+        function movedireita() {
+            rMove = true;
+            let boatLeft = parseInt(getComputedStyle(boat).left);
+            let fundoWidth = parseInt(getComputedStyle(fundo).width);
+            let boatWidth = parseInt(getComputedStyle(boat).width);
+            if ((boatLeft + 5) > (fundoWidth - boatWidth)) {
+                boat.style.left = fundoWidth - boatWidth;
+            } else {
+                boat.style.left = boatLeft + 5;
+            }
+        }
+        function moveesquerda() {
+            lMove = true;
+            let boatLeft = parseInt(getComputedStyle(boat).left)
+            if ((boatLeft - 5) < 0) {
+                boat.style.left = 0
+            } else {
+                boat.style.left = boatLeft - 5;
+            }
+        }
+        if ((rMove == true) && (lMove == true)) {
+            stop();
+        }
+        //Hook Down
+        document.getElementById("DropHook").onclick = () => {
+            drop = setInterval("hookDown()", 15)
+        };
+        function hookDown() {
+            if (game == "ongoing") {
+                document.getElementById("botoes").style.display = "none";
+                document.getElementById("mensagem").style.display = "flex";
+                let hookHeight = parseInt(getComputedStyle(hook).height) + parseInt(getComputedStyle(boat).top);
+                let hookTop = parseInt(getComputedStyle(hook).top);
+                let fundoBottom = parseInt(getComputedStyle(fundo).padding);
+                let ropeHeight = parseInt(getComputedStyle(rope).height);
+                let ropeTop = parseInt(getComputedStyle(rope).top);
+                if ((hookTop + 5) > (fundoBottom - hookHeight)) {
+                    hook.style.top = fundoBottom - hookHeight;
+                } else {
+                    hook.style.top = hookTop + 5;
+                    rope.style.top = ropeTop - 5;
+                    rope.style.height = ropeHeight + 5;
+                }
+                if (hookTop == (fundoBottom - hookHeight)) {
+                    let gruntChance = Math.floor(Math.random() * 10);
+                    if ((gruntChance == 4) || (gruntChance == 8)) {
+                        document.getElementById("grunt").play();
+                    }
+                    fisguei = "return";
+                    clearInterval(drop);
+                    call = setInterval("Recall()", 15)
+                }
+            }
+        }
+        function Recall() {
+            let hookTop = parseInt(getComputedStyle(hook).top);
+            let hookSpot = parseInt(getComputedStyle(boat).height);
+            let ropeHeight = parseInt(getComputedStyle(rope).height);
+            let ropeTop = parseInt(getComputedStyle(rope).top);
+            if ((hookTop - 5) <= (hookSpot)) {
+                hook.style.top = null;
+            } else {
+                hook.style.top = hookTop - 5;
+                rope.style.top = ropeTop + 5;
+                rope.style.height = ropeHeight - 5;
+            }
+            if (parseInt(hookTop) == hookSpot) {
+                rope.style.height = null;
+                rope.style.top = null;
+                fisguei = false;
+                if (game == "ongoing") {
+                    document.getElementById("botoes").style.display = "flex";
+                    document.getElementById("mensagem").style.display = "none";
+                    clearInterval(call);
+                }
+            }
+        }
+        //Create fish
+        function fish(color) {
+            let fish = document.createElement("div");
+            let fishHit = document.createElement("div");
+            document.getElementById("fundo").appendChild(fish);
+            fish.classList.add("peixe");
+            fishPosition(fish);
+            switch (color) {
+                case "red":
+                    fish.setAttribute("id", "red");
+                    redSPD = Math.ceil(Math.random() * 3 + 3);
+                    FSred = setInterval("redFSwimR()", redSPD);
+                    break;
+                case "orange":
+                    fish.setAttribute("id", "orange");
+                    orangeSPD = Math.ceil(Math.random() * 3 + 14);
+                    FSorange = setInterval("orangeFSwimR()", orangeSPD);
+                    break;
+                case "yellow":
+                    fish.setAttribute("id", "yellow");
+                    yellowSPD = Math.ceil(Math.random() * 3 + 18);
+                    FSyellow = setInterval("yellowFSwimR()", yellowSPD);
+                    break;
+                case "green":
+                    fish.setAttribute("id", "green");
+                    greenSPD = Math.ceil(Math.random() * 3);
+                    FSgreen = setInterval("greenFSwimR()", greenSPD);
+                    break;
+                case "blue":
+                    fish.setAttribute("id", "blue");
+                    blueSPD = Math.ceil(Math.random() * 3 + 8);
+                    FSblue = setInterval("blueFSwimR()", blueSPD);
+                    break;
+                case "purple":
+                    fish.setAttribute("id", "purple");
+                    purpleSPD = Math.ceil(Math.random() * 3 + 16);
+                    FSpurple = setInterval("purpleFSwimR()", purpleSPD);
+                    break;
+                case "black":
+                    fish.setAttribute("id", "black");
+                    blackSPD = Math.ceil(Math.random() * 3 + 10);
+                    FSblack = setInterval("blackFSwimR()", blackSPD);
+                    break;
+                case "white":
+                    fish.setAttribute("id", "white");
+                    whiteSPD = Math.ceil(Math.random() * 3 + 12);
+                    FSwhite = setInterval("whiteFSwimR()", whiteSPD);
+                    break;
+            }
+        }
+        function fishPosition(fish) {
+            fish.style.left = parseInt(Math.random() * 100) + "%"
+        }
+        function redFSwimR() {
+            if (game == "ongoing") {
+                let redLeft = parseInt(getComputedStyle(red).left);
+                let fundoWidth = parseInt(getComputedStyle(fundo).width);
+                let redWidth = parseInt(getComputedStyle(red).width);
+                let hookX = parseInt(getComputedStyle(hook).left) + parseInt(getComputedStyle(boat).left);
+                let redTop = parseInt(getComputedStyle(red).top)
+                let hookY = parseInt(getComputedStyle(hook).top) + parseInt(getComputedStyle(boat).top)
 
-				if ((redLeft + 2) > (fundoWidth - redWidth)) {
-					red.style.left = fundoWidth - redWidth;
-				} else {
-					red.style.left = redLeft + 2;
-				}
-				if ((((redLeft + redWidth) > hookX) && ((redLeft + redWidth) < (hookX + parseInt(getComputedStyle(hook).width)))) && ((redTop > hookY)) && (redTop < hookY + parseInt(getComputedStyle(hook).height)) && fisguei == false) {
-					fisguei = true;
-					clearInterval(FSred);
-					clearInterval(drop);
-					call = setInterval("Recall()", 15)
-					document.getElementById("red").remove();
-					let redRedo = setTimeout("fish('red')", 10000);
-					scorePoints += 40
-					score.innerHTML = `HI-Score: ${HS1} - Score: ${scorePoints}`
-				} else {
-					if (redLeft == fundoWidth - redWidth) {
-						document.getElementById("red").style.transform = "scaleX(-1)";
-						clearInterval(FSred);
-						FSred = setInterval("redFSwimL()", redSPD);
-					}
-				}
-			}
-		}
-		function redFSwimL() {
-			if (game == "ongoing") {
-				let redLeft = parseInt(getComputedStyle(red).left);
-				let fundoWidth = parseInt(getComputedStyle(fundo).width);
-				let redWidth = parseInt(getComputedStyle(red).width);
-				let fundoLeft = parseInt(getComputedStyle(fundo).left);
-				let hookX = parseInt(getComputedStyle(hook).left) + parseInt(getComputedStyle(boat).left);
-				let redTop = parseInt(getComputedStyle(red).top)
-				let hookY = parseInt(getComputedStyle(hook).top) + parseInt(getComputedStyle(boat).top)
-				if ((redLeft - 2) < 0) {
-					red.style.left = 0
-				} else {
-					red.style.left = redLeft - 2;
-				}
-				if (((redLeft > hookX) && ((redLeft) < (hookX + parseInt(getComputedStyle(hook).width)))) && ((redTop > hookY)) && (redTop < hookY + parseInt(getComputedStyle(hook).height)) && fisguei == false) {
-					fisguei = true;
-					clearInterval(FSred);
-					clearInterval(drop);
-					call = setInterval("Recall()", 15)
-					document.getElementById("red").remove();
-					let redRedo = setTimeout("fish('red')", 10000);
-					scorePoints += 40
-					score.innerHTML = `HI-Score: ${HS1} - Score: ${scorePoints}`
-				} else {
-					if (redLeft == 0) {
-						document.getElementById("red").style.transform = "scaleX(1)";
-						clearInterval(FSred);
-						FSred = setInterval("redFSwimR()", redSPD);
-					}
-				}
-			}
-		}
-		function blueFSwimR() {
-			if (game == "ongoing") {
-				let blueLeft = parseInt(getComputedStyle(blue).left);
-				let fundoWidth = parseInt(getComputedStyle(fundo).width);
-				let blueWidth = parseInt(getComputedStyle(blue).width);
-				let hookX = parseInt(getComputedStyle(hook).left) + parseInt(getComputedStyle(boat).left);
-				let blueTop = parseInt(getComputedStyle(blue).top)
-				let hookY = parseInt(getComputedStyle(hook).top) + parseInt(getComputedStyle(boat).top)
+                if ((redLeft + 2) > (fundoWidth - redWidth)) {
+                    red.style.left = fundoWidth - redWidth;
+                } else {
+                    red.style.left = redLeft + 2;
+                }
+                if ((((redLeft + redWidth) > hookX) && ((redLeft + redWidth) < (hookX + parseInt(getComputedStyle(hook).width)))) && ((redTop > hookY)) && (redTop < hookY + parseInt(getComputedStyle(hook).height)) && fisguei == false) {
+                    fisguei = true;
+                    clearInterval(FSred);
+                    clearInterval(drop);
+                    call = setInterval("Recall()", 15)
+                    document.getElementById("red").remove();
+                    let redRedo = setTimeout("fish('red')", 10000);
+                    scorePoints += 40
+                    score.innerHTML = `HI-Score: ${HS1} - Score: ${scorePoints}`
+                } else {
+                    if (redLeft == fundoWidth - redWidth) {
+                        document.getElementById("red").style.transform = "scaleX(-1)";
+                        clearInterval(FSred);
+                        FSred = setInterval("redFSwimL()", redSPD);
+                    }
+                }
+            }
+        }
+        function redFSwimL() {
+            if (game == "ongoing") {
+                let redLeft = parseInt(getComputedStyle(red).left);
+                let fundoWidth = parseInt(getComputedStyle(fundo).width);
+                let redWidth = parseInt(getComputedStyle(red).width);
+                let fundoLeft = parseInt(getComputedStyle(fundo).left);
+                let hookX = parseInt(getComputedStyle(hook).left) + parseInt(getComputedStyle(boat).left);
+                let redTop = parseInt(getComputedStyle(red).top)
+                let hookY = parseInt(getComputedStyle(hook).top) + parseInt(getComputedStyle(boat).top)
+                if ((redLeft - 2) < 0) {
+                    red.style.left = 0
+                } else {
+                    red.style.left = redLeft - 2;
+                }
+                if (((redLeft > hookX) && ((redLeft) < (hookX + parseInt(getComputedStyle(hook).width)))) && ((redTop > hookY)) && (redTop < hookY + parseInt(getComputedStyle(hook).height)) && fisguei == false) {
+                    fisguei = true;
+                    clearInterval(FSred);
+                    clearInterval(drop);
+                    call = setInterval("Recall()", 15)
+                    document.getElementById("red").remove();
+                    let redRedo = setTimeout("fish('red')", 10000);
+                    scorePoints += 40
+                    score.innerHTML = `HI-Score: ${HS1} - Score: ${scorePoints}`
+                } else {
+                    if (redLeft == 0) {
+                        document.getElementById("red").style.transform = "scaleX(1)";
+                        clearInterval(FSred);
+                        FSred = setInterval("redFSwimR()", redSPD);
+                    }
+                }
+            }
+        }
+        function blueFSwimR() {
+            if (game == "ongoing") {
+                let blueLeft = parseInt(getComputedStyle(blue).left);
+                let fundoWidth = parseInt(getComputedStyle(fundo).width);
+                let blueWidth = parseInt(getComputedStyle(blue).width);
+                let hookX = parseInt(getComputedStyle(hook).left) + parseInt(getComputedStyle(boat).left);
+                let blueTop = parseInt(getComputedStyle(blue).top)
+                let hookY = parseInt(getComputedStyle(hook).top) + parseInt(getComputedStyle(boat).top)
 
-				if ((blueLeft + 2) > (fundoWidth - blueWidth)) {
-					blue.style.left = fundoWidth - blueWidth;
-				} else {
-					blue.style.left = blueLeft + 2;
-				}
-				if ((((blueLeft + blueWidth) > hookX) && ((blueLeft + blueWidth) < (hookX + parseInt(getComputedStyle(hook).width)))) && ((blueTop > hookY)) && (blueTop < hookY + parseInt(getComputedStyle(hook).height)) && fisguei == false) {
-					fisguei = true;
-					clearInterval(FSblue);
-					clearInterval(drop);
-					call = setInterval("Recall()", 15)
-					document.getElementById("blue").remove();
-					let blueRedo = setTimeout("fish('blue')", 10000);
-					scorePoints += 30
-					score.innerHTML = `HI-Score: ${HS1} - Score: ${scorePoints}`
-				} else {
-					if (blueLeft == fundoWidth - blueWidth) {
-						document.getElementById("blue").style.transform = "scaleX(-1)"
-						clearInterval(FSblue);
-						FSblue = setInterval("blueFSwimL()", blueSPD);
-					}
-				}
-			}
-		}
-		function blueFSwimL() {
-			if (game == "ongoing") {
-				let blueLeft = parseInt(getComputedStyle(blue).left);
-				let fundoWidth = parseInt(getComputedStyle(fundo).width);
-				let blueWidth = parseInt(getComputedStyle(blue).width);
-				let fundoLeft = parseInt(getComputedStyle(fundo).left);
-				let hookX = parseInt(getComputedStyle(hook).left) + parseInt(getComputedStyle(boat).left);
-				let blueTop = parseInt(getComputedStyle(blue).top)
-				let hookY = parseInt(getComputedStyle(hook).top) + parseInt(getComputedStyle(boat).top)
-				if ((blueLeft - 2) < 0) {
-					blue.style.left = 0
-				} else {
-					blue.style.left = blueLeft - 2;
-				}
-				if (((blueLeft > hookX) && ((blueLeft) < (hookX + parseInt(getComputedStyle(hook).width)))) && ((blueTop > hookY)) && (blueTop < hookY + parseInt(getComputedStyle(hook).height)) && fisguei == false) {
-					fisguei = true;
-					clearInterval(FSblue);
-					clearInterval(drop);
-					call = setInterval("Recall()", 15)
-					document.getElementById("blue").remove();
-					let blueRedo = setTimeout("fish('blue')", 10000);
-					scorePoints += 30
-					score.innerHTML = `HI-Score: ${HS1} - Score: ${scorePoints}`
-				} else {
-					if (blueLeft == 0) {
-						document.getElementById("blue").style.transform = "scaleX(1)";
-						clearInterval(FSblue);
-						FSblue = setInterval("blueFSwimR()", blueSPD);
-					}
-				}
-			}
-		}
-		function purpleFSwimR() {
-			if (game == "ongoing") {
-				let purpleLeft = parseInt(getComputedStyle(purple).left);
-				let fundoWidth = parseInt(getComputedStyle(fundo).width);
-				let purpleWidth = parseInt(getComputedStyle(purple).width);
-				let hookX = parseInt(getComputedStyle(hook).left) + parseInt(getComputedStyle(boat).left);
-				let purpleTop = parseInt(getComputedStyle(purple).top)
-				let hookY = parseInt(getComputedStyle(hook).top) + parseInt(getComputedStyle(boat).top)
-				if ((purpleLeft + 2) > (fundoWidth - purpleWidth)) {
-					purple.style.left = fundoWidth - purpleWidth;
-				} else {
-					purple.style.left = purpleLeft + 2;
-				}
-				if ((((purpleLeft + purpleWidth) > hookX) && ((purpleLeft + purpleWidth) < (hookX + parseInt(getComputedStyle(hook).width)))) && ((purpleTop > hookY)) && (purpleTop < hookY + parseInt(getComputedStyle(hook).height)) && fisguei == false) {
-					fisguei = true;
-					clearInterval(FSpurple);
-					clearInterval(drop);
-					call = setInterval("Recall()", 15)
-					document.getElementById("purple").remove();
-					let purpleRedo = setTimeout("fish('purple')", 10000);
-					scorePoints += 10
-					score.innerHTML = `HI-Score: ${HS1} - Score: ${scorePoints}`
-				} else {
-					if (purpleLeft == fundoWidth - purpleWidth) {
-						document.getElementById("purple").style.transform = "scaleX(-1)"
-						clearInterval(FSpurple);
-						FSpurple = setInterval("purpleFSwimL()", purpleSPD);
-					}
-				}
-			}
-		}
-		function purpleFSwimL() {
-			if (game == "ongoing") {
-				let purpleLeft = parseInt(getComputedStyle(purple).left);
-				let fundoWidth = parseInt(getComputedStyle(fundo).width);
-				let purpleWidth = parseInt(getComputedStyle(purple).width);
-				let fundoLeft = parseInt(getComputedStyle(fundo).left);
-				let hookX = parseInt(getComputedStyle(hook).left) + parseInt(getComputedStyle(boat).left);
-				let purpleTop = parseInt(getComputedStyle(purple).top)
-				let hookY = parseInt(getComputedStyle(hook).top) + parseInt(getComputedStyle(boat).top)
-				if ((purpleLeft - 2) < 0) {
-					purple.style.left = 0
-				} else {
-					purple.style.left = purpleLeft - 2;
-				}
-				if (((purpleLeft > hookX) && ((purpleLeft) < (hookX + parseInt(getComputedStyle(hook).width)))) && ((purpleTop > hookY)) && (purpleTop < hookY + parseInt(getComputedStyle(hook).height)) && fisguei == false) {
-					fisguei = true;
-					clearInterval(FSpurple);
-					clearInterval(drop);
-					call = setInterval("Recall()", 15)
-					document.getElementById("purple").remove();
-					let purpleRedo = setTimeout("fish('purple')", 10000);
-					scorePoints += 10
-					score.innerHTML = `HI-Score: ${HS1} - Score: ${scorePoints}`
-				} else {
-					if (purpleLeft == 0) {
-						document.getElementById("purple").style.transform = "scaleX(1)";
-						clearInterval(FSpurple);
-						FSpurple = setInterval("purpleFSwimR()", purpleSPD);
-					}
-				}
-			}
-		}
-		function orangeFSwimR() {
-			if (game == "ongoing") {
-				let orangeLeft = parseInt(getComputedStyle(orange).left);
-				let fundoWidth = parseInt(getComputedStyle(fundo).width);
-				let orangeWidth = parseInt(getComputedStyle(orange).width);
-				let hookX = parseInt(getComputedStyle(hook).left) + parseInt(getComputedStyle(boat).left);
-				let orangeTop = parseInt(getComputedStyle(orange).top)
-				let hookY = parseInt(getComputedStyle(hook).top) + parseInt(getComputedStyle(boat).top)
-				if ((orangeLeft + 2) > (fundoWidth - orangeWidth)) {
-					orange.style.left = fundoWidth - orangeWidth;
-				} else {
-					orange.style.left = orangeLeft + 2;
-				}
-				if ((((orangeLeft + orangeWidth) > hookX) && ((orangeLeft + orangeWidth) < (hookX + parseInt(getComputedStyle(hook).width)))) && ((orangeTop > hookY)) && (orangeTop < hookY + parseInt(getComputedStyle(hook).height)) && fisguei == false) {
-					fisguei = true;
-					clearInterval(FSorange);
-					clearInterval(drop);
-					call = setInterval("Recall()", 15)
-					document.getElementById("orange").remove();
-					let orangeRedo = setTimeout("fish('orange')", 10000);
-					scorePoints += 15
-					score.innerHTML = `HI-Score: ${HS1} - Score: ${scorePoints}`
-				} else {
-					if (orangeLeft == fundoWidth - orangeWidth) {
-						document.getElementById("orange").style.transform = "scaleX(-1)"
-						clearInterval(FSorange);
-						FSorange = setInterval("orangeFSwimL()", orangeSPD);
-					}
-				}
-			}
-		}
-		function orangeFSwimL() {
-			if (game == "ongoing") {
-				let orangeLeft = parseInt(getComputedStyle(orange).left);
-				let fundoWidth = parseInt(getComputedStyle(fundo).width);
-				let orangeWidth = parseInt(getComputedStyle(orange).width);
-				let fundoLeft = parseInt(getComputedStyle(fundo).left);
-				let hookX = parseInt(getComputedStyle(hook).left) + parseInt(getComputedStyle(boat).left);
-				let orangeTop = parseInt(getComputedStyle(orange).top)
-				let hookY = parseInt(getComputedStyle(hook).top) + parseInt(getComputedStyle(boat).top)
-				if ((orangeLeft - 2) < 0) {
-					orange.style.left = 0
-				} else {
-					orange.style.left = orangeLeft - 2;
-				}
-				if (((orangeLeft > hookX) && ((orangeLeft) < (hookX + parseInt(getComputedStyle(hook).width)))) && ((orangeTop > hookY)) && (orangeTop < hookY + parseInt(getComputedStyle(hook).height)) && fisguei == false) {
-					fisguei = true;
-					clearInterval(FSorange);
-					clearInterval(drop);
-					call = setInterval("Recall()", 15)
-					document.getElementById("orange").remove();
-					let orangeRedo = setTimeout("fish('orange')", 10000);
-					scorePoints += 15
-					score.innerHTML = `HI-Score: ${HS1} - Score: ${scorePoints}`
-				} else {
-					if (orangeLeft == 0) {
-						document.getElementById("orange").style.transform = "scaleX(1)";
-						clearInterval(FSorange);
-						FSorange = setInterval("orangeFSwimR()", orangeSPD);
-					}
-				}
-			}
-		}
-		function yellowFSwimR() {
-			if (game == "ongoing") {
-				let yellowLeft = parseInt(getComputedStyle(yellow).left);
-				let fundoWidth = parseInt(getComputedStyle(fundo).width);
-				let yellowWidth = parseInt(getComputedStyle(yellow).width);
-				let hookX = parseInt(getComputedStyle(hook).left) + parseInt(getComputedStyle(boat).left);
-				let yellowTop = parseInt(getComputedStyle(yellow).top)
-				let hookY = parseInt(getComputedStyle(hook).top) + parseInt(getComputedStyle(boat).top)
+                if ((blueLeft + 2) > (fundoWidth - blueWidth)) {
+                    blue.style.left = fundoWidth - blueWidth;
+                } else {
+                    blue.style.left = blueLeft + 2;
+                }
+                if ((((blueLeft + blueWidth) > hookX) && ((blueLeft + blueWidth) < (hookX + parseInt(getComputedStyle(hook).width)))) && ((blueTop > hookY)) && (blueTop < hookY + parseInt(getComputedStyle(hook).height)) && fisguei == false) {
+                    fisguei = true;
+                    clearInterval(FSblue);
+                    clearInterval(drop);
+                    call = setInterval("Recall()", 15)
+                    document.getElementById("blue").remove();
+                    let blueRedo = setTimeout("fish('blue')", 10000);
+                    scorePoints += 30
+                    score.innerHTML = `HI-Score: ${HS1} - Score: ${scorePoints}`
+                } else {
+                    if (blueLeft == fundoWidth - blueWidth) {
+                        document.getElementById("blue").style.transform = "scaleX(-1)"
+                        clearInterval(FSblue);
+                        FSblue = setInterval("blueFSwimL()", blueSPD);
+                    }
+                }
+            }
+        }
+        function blueFSwimL() {
+            if (game == "ongoing") {
+                let blueLeft = parseInt(getComputedStyle(blue).left);
+                let fundoWidth = parseInt(getComputedStyle(fundo).width);
+                let blueWidth = parseInt(getComputedStyle(blue).width);
+                let fundoLeft = parseInt(getComputedStyle(fundo).left);
+                let hookX = parseInt(getComputedStyle(hook).left) + parseInt(getComputedStyle(boat).left);
+                let blueTop = parseInt(getComputedStyle(blue).top)
+                let hookY = parseInt(getComputedStyle(hook).top) + parseInt(getComputedStyle(boat).top)
+                if ((blueLeft - 2) < 0) {
+                    blue.style.left = 0
+                } else {
+                    blue.style.left = blueLeft - 2;
+                }
+                if (((blueLeft > hookX) && ((blueLeft) < (hookX + parseInt(getComputedStyle(hook).width)))) && ((blueTop > hookY)) && (blueTop < hookY + parseInt(getComputedStyle(hook).height)) && fisguei == false) {
+                    fisguei = true;
+                    clearInterval(FSblue);
+                    clearInterval(drop);
+                    call = setInterval("Recall()", 15)
+                    document.getElementById("blue").remove();
+                    let blueRedo = setTimeout("fish('blue')", 10000);
+                    scorePoints += 30
+                    score.innerHTML = `HI-Score: ${HS1} - Score: ${scorePoints}`
+                } else {
+                    if (blueLeft == 0) {
+                        document.getElementById("blue").style.transform = "scaleX(1)";
+                        clearInterval(FSblue);
+                        FSblue = setInterval("blueFSwimR()", blueSPD);
+                    }
+                }
+            }
+        }
+        function purpleFSwimR() {
+            if (game == "ongoing") {
+                let purpleLeft = parseInt(getComputedStyle(purple).left);
+                let fundoWidth = parseInt(getComputedStyle(fundo).width);
+                let purpleWidth = parseInt(getComputedStyle(purple).width);
+                let hookX = parseInt(getComputedStyle(hook).left) + parseInt(getComputedStyle(boat).left);
+                let purpleTop = parseInt(getComputedStyle(purple).top)
+                let hookY = parseInt(getComputedStyle(hook).top) + parseInt(getComputedStyle(boat).top)
+                if ((purpleLeft + 2) > (fundoWidth - purpleWidth)) {
+                    purple.style.left = fundoWidth - purpleWidth;
+                } else {
+                    purple.style.left = purpleLeft + 2;
+                }
+                if ((((purpleLeft + purpleWidth) > hookX) && ((purpleLeft + purpleWidth) < (hookX + parseInt(getComputedStyle(hook).width)))) && ((purpleTop > hookY)) && (purpleTop < hookY + parseInt(getComputedStyle(hook).height)) && fisguei == false) {
+                    fisguei = true;
+                    clearInterval(FSpurple);
+                    clearInterval(drop);
+                    call = setInterval("Recall()", 15)
+                    document.getElementById("purple").remove();
+                    let purpleRedo = setTimeout("fish('purple')", 10000);
+                    scorePoints += 10
+                    score.innerHTML = `HI-Score: ${HS1} - Score: ${scorePoints}`
+                } else {
+                    if (purpleLeft == fundoWidth - purpleWidth) {
+                        document.getElementById("purple").style.transform = "scaleX(-1)"
+                        clearInterval(FSpurple);
+                        FSpurple = setInterval("purpleFSwimL()", purpleSPD);
+                    }
+                }
+            }
+        }
+        function purpleFSwimL() {
+            if (game == "ongoing") {
+                let purpleLeft = parseInt(getComputedStyle(purple).left);
+                let fundoWidth = parseInt(getComputedStyle(fundo).width);
+                let purpleWidth = parseInt(getComputedStyle(purple).width);
+                let fundoLeft = parseInt(getComputedStyle(fundo).left);
+                let hookX = parseInt(getComputedStyle(hook).left) + parseInt(getComputedStyle(boat).left);
+                let purpleTop = parseInt(getComputedStyle(purple).top)
+                let hookY = parseInt(getComputedStyle(hook).top) + parseInt(getComputedStyle(boat).top)
+                if ((purpleLeft - 2) < 0) {
+                    purple.style.left = 0
+                } else {
+                    purple.style.left = purpleLeft - 2;
+                }
+                if (((purpleLeft > hookX) && ((purpleLeft) < (hookX + parseInt(getComputedStyle(hook).width)))) && ((purpleTop > hookY)) && (purpleTop < hookY + parseInt(getComputedStyle(hook).height)) && fisguei == false) {
+                    fisguei = true;
+                    clearInterval(FSpurple);
+                    clearInterval(drop);
+                    call = setInterval("Recall()", 15)
+                    document.getElementById("purple").remove();
+                    let purpleRedo = setTimeout("fish('purple')", 10000);
+                    scorePoints += 10
+                    score.innerHTML = `HI-Score: ${HS1} - Score: ${scorePoints}`
+                } else {
+                    if (purpleLeft == 0) {
+                        document.getElementById("purple").style.transform = "scaleX(1)";
+                        clearInterval(FSpurple);
+                        FSpurple = setInterval("purpleFSwimR()", purpleSPD);
+                    }
+                }
+            }
+        }
+        function orangeFSwimR() {
+            if (game == "ongoing") {
+                let orangeLeft = parseInt(getComputedStyle(orange).left);
+                let fundoWidth = parseInt(getComputedStyle(fundo).width);
+                let orangeWidth = parseInt(getComputedStyle(orange).width);
+                let hookX = parseInt(getComputedStyle(hook).left) + parseInt(getComputedStyle(boat).left);
+                let orangeTop = parseInt(getComputedStyle(orange).top)
+                let hookY = parseInt(getComputedStyle(hook).top) + parseInt(getComputedStyle(boat).top)
+                if ((orangeLeft + 2) > (fundoWidth - orangeWidth)) {
+                    orange.style.left = fundoWidth - orangeWidth;
+                } else {
+                    orange.style.left = orangeLeft + 2;
+                }
+                if ((((orangeLeft + orangeWidth) > hookX) && ((orangeLeft + orangeWidth) < (hookX + parseInt(getComputedStyle(hook).width)))) && ((orangeTop > hookY)) && (orangeTop < hookY + parseInt(getComputedStyle(hook).height)) && fisguei == false) {
+                    fisguei = true;
+                    clearInterval(FSorange);
+                    clearInterval(drop);
+                    call = setInterval("Recall()", 15)
+                    document.getElementById("orange").remove();
+                    let orangeRedo = setTimeout("fish('orange')", 10000);
+                    scorePoints += 15
+                    score.innerHTML = `HI-Score: ${HS1} - Score: ${scorePoints}`
+                } else {
+                    if (orangeLeft == fundoWidth - orangeWidth) {
+                        document.getElementById("orange").style.transform = "scaleX(-1)"
+                        clearInterval(FSorange);
+                        FSorange = setInterval("orangeFSwimL()", orangeSPD);
+                    }
+                }
+            }
+        }
+        function orangeFSwimL() {
+            if (game == "ongoing") {
+                let orangeLeft = parseInt(getComputedStyle(orange).left);
+                let fundoWidth = parseInt(getComputedStyle(fundo).width);
+                let orangeWidth = parseInt(getComputedStyle(orange).width);
+                let fundoLeft = parseInt(getComputedStyle(fundo).left);
+                let hookX = parseInt(getComputedStyle(hook).left) + parseInt(getComputedStyle(boat).left);
+                let orangeTop = parseInt(getComputedStyle(orange).top)
+                let hookY = parseInt(getComputedStyle(hook).top) + parseInt(getComputedStyle(boat).top)
+                if ((orangeLeft - 2) < 0) {
+                    orange.style.left = 0
+                } else {
+                    orange.style.left = orangeLeft - 2;
+                }
+                if (((orangeLeft > hookX) && ((orangeLeft) < (hookX + parseInt(getComputedStyle(hook).width)))) && ((orangeTop > hookY)) && (orangeTop < hookY + parseInt(getComputedStyle(hook).height)) && fisguei == false) {
+                    fisguei = true;
+                    clearInterval(FSorange);
+                    clearInterval(drop);
+                    call = setInterval("Recall()", 15)
+                    document.getElementById("orange").remove();
+                    let orangeRedo = setTimeout("fish('orange')", 10000);
+                    scorePoints += 15
+                    score.innerHTML = `HI-Score: ${HS1} - Score: ${scorePoints}`
+                } else {
+                    if (orangeLeft == 0) {
+                        document.getElementById("orange").style.transform = "scaleX(1)";
+                        clearInterval(FSorange);
+                        FSorange = setInterval("orangeFSwimR()", orangeSPD);
+                    }
+                }
+            }
+        }
+        function yellowFSwimR() {
+            if (game == "ongoing") {
+                let yellowLeft = parseInt(getComputedStyle(yellow).left);
+                let fundoWidth = parseInt(getComputedStyle(fundo).width);
+                let yellowWidth = parseInt(getComputedStyle(yellow).width);
+                let hookX = parseInt(getComputedStyle(hook).left) + parseInt(getComputedStyle(boat).left);
+                let yellowTop = parseInt(getComputedStyle(yellow).top)
+                let hookY = parseInt(getComputedStyle(hook).top) + parseInt(getComputedStyle(boat).top)
 
-				if ((yellowLeft + 2) > (fundoWidth - yellowWidth)) {
-					yellow.style.left = fundoWidth - yellowWidth;
-				} else {
-					yellow.style.left = yellowLeft + 2;
-				}
-				if ((((yellowLeft + yellowWidth) > hookX) && ((yellowLeft + yellowWidth) < (hookX + parseInt(getComputedStyle(hook).width)))) && ((yellowTop > hookY)) && (yellowTop < hookY + parseInt(getComputedStyle(hook).height)) && fisguei == false) {
-					fisguei = true;
-					clearInterval(FSyellow);
-					clearInterval(drop);
-					call = setInterval("Recall()", 15)
-					document.getElementById("yellow").remove();
-					let yellowRedo = setTimeout("fish('yellow')", 10000);
-					scorePoints += 5
-					score.innerHTML = `HI-Score: ${HS1} - Score: ${scorePoints}`
-				} else {
-					if (yellowLeft == fundoWidth - yellowWidth) {
-						document.getElementById("yellow").style.transform = "scaleX(-1)"
-						clearInterval(FSyellow);
-						FSyellow = setInterval("yellowFSwimL()", yellowSPD);
-					}
-				}
-			}
-		}
-		function yellowFSwimL() {
-			if (game == "ongoing") {
-				let yellowLeft = parseInt(getComputedStyle(yellow).left);
-				let fundoWidth = parseInt(getComputedStyle(fundo).width);
-				let yellowWidth = parseInt(getComputedStyle(yellow).width);
-				let fundoLeft = parseInt(getComputedStyle(fundo).left);
-				let hookX = parseInt(getComputedStyle(hook).left) + parseInt(getComputedStyle(boat).left);
-				let yellowTop = parseInt(getComputedStyle(yellow).top)
-				let hookY = parseInt(getComputedStyle(hook).top) + parseInt(getComputedStyle(boat).top)
-				if ((yellowLeft - 2) < 0) {
-					yellow.style.left = 0
-				} else {
-					yellow.style.left = yellowLeft - 2;
-				}
-				if (((yellowLeft > hookX) && ((yellowLeft) < (hookX + parseInt(getComputedStyle(hook).width)))) && ((yellowTop > hookY)) && (yellowTop < hookY + parseInt(getComputedStyle(hook).height)) && fisguei == false) {
-					fisguei = true;
-					clearInterval(FSyellow);
-					clearInterval(drop);
-					call = setInterval("Recall()", 15)
-					document.getElementById("yellow").remove();
-					let yellowRedo = setTimeout("fish('yellow')", 10000);
-					scorePoints += 5
-					score.innerHTML = `HI-Score: ${HS1} - Score: ${scorePoints}`
-				} else {
-					if (yellowLeft == 0) {
-						document.getElementById("yellow").style.transform = "scaleX(1)";
-						clearInterval(FSyellow);
-						FSyellow = setInterval("yellowFSwimR()", yellowSPD);
-					}
-				}
-			}
-		}
-		function greenFSwimR() {
-			if (game == "ongoing") {
-				let greenLeft = parseInt(getComputedStyle(green).left);
-				let fundoWidth = parseInt(getComputedStyle(fundo).width);
-				let greenWidth = parseInt(getComputedStyle(green).width);
-				let hookX = parseInt(getComputedStyle(hook).left) + parseInt(getComputedStyle(boat).left);
-				let greenTop = parseInt(getComputedStyle(green).top)
-				let hookY = parseInt(getComputedStyle(hook).top) + parseInt(getComputedStyle(boat).top)
+                if ((yellowLeft + 2) > (fundoWidth - yellowWidth)) {
+                    yellow.style.left = fundoWidth - yellowWidth;
+                } else {
+                    yellow.style.left = yellowLeft + 2;
+                }
+                if ((((yellowLeft + yellowWidth) > hookX) && ((yellowLeft + yellowWidth) < (hookX + parseInt(getComputedStyle(hook).width)))) && ((yellowTop > hookY)) && (yellowTop < hookY + parseInt(getComputedStyle(hook).height)) && fisguei == false) {
+                    fisguei = true;
+                    clearInterval(FSyellow);
+                    clearInterval(drop);
+                    call = setInterval("Recall()", 15)
+                    document.getElementById("yellow").remove();
+                    let yellowRedo = setTimeout("fish('yellow')", 10000);
+                    scorePoints += 5
+                    score.innerHTML = `HI-Score: ${HS1} - Score: ${scorePoints}`
+                } else {
+                    if (yellowLeft == fundoWidth - yellowWidth) {
+                        document.getElementById("yellow").style.transform = "scaleX(-1)"
+                        clearInterval(FSyellow);
+                        FSyellow = setInterval("yellowFSwimL()", yellowSPD);
+                    }
+                }
+            }
+        }
+        function yellowFSwimL() {
+            if (game == "ongoing") {
+                let yellowLeft = parseInt(getComputedStyle(yellow).left);
+                let fundoWidth = parseInt(getComputedStyle(fundo).width);
+                let yellowWidth = parseInt(getComputedStyle(yellow).width);
+                let fundoLeft = parseInt(getComputedStyle(fundo).left);
+                let hookX = parseInt(getComputedStyle(hook).left) + parseInt(getComputedStyle(boat).left);
+                let yellowTop = parseInt(getComputedStyle(yellow).top)
+                let hookY = parseInt(getComputedStyle(hook).top) + parseInt(getComputedStyle(boat).top)
+                if ((yellowLeft - 2) < 0) {
+                    yellow.style.left = 0
+                } else {
+                    yellow.style.left = yellowLeft - 2;
+                }
+                if (((yellowLeft > hookX) && ((yellowLeft) < (hookX + parseInt(getComputedStyle(hook).width)))) && ((yellowTop > hookY)) && (yellowTop < hookY + parseInt(getComputedStyle(hook).height)) && fisguei == false) {
+                    fisguei = true;
+                    clearInterval(FSyellow);
+                    clearInterval(drop);
+                    call = setInterval("Recall()", 15)
+                    document.getElementById("yellow").remove();
+                    let yellowRedo = setTimeout("fish('yellow')", 10000);
+                    scorePoints += 5
+                    score.innerHTML = `HI-Score: ${HS1} - Score: ${scorePoints}`
+                } else {
+                    if (yellowLeft == 0) {
+                        document.getElementById("yellow").style.transform = "scaleX(1)";
+                        clearInterval(FSyellow);
+                        FSyellow = setInterval("yellowFSwimR()", yellowSPD);
+                    }
+                }
+            }
+        }
+        function greenFSwimR() {
+            if (game == "ongoing") {
+                let greenLeft = parseInt(getComputedStyle(green).left);
+                let fundoWidth = parseInt(getComputedStyle(fundo).width);
+                let greenWidth = parseInt(getComputedStyle(green).width);
+                let hookX = parseInt(getComputedStyle(hook).left) + parseInt(getComputedStyle(boat).left);
+                let greenTop = parseInt(getComputedStyle(green).top)
+                let hookY = parseInt(getComputedStyle(hook).top) + parseInt(getComputedStyle(boat).top)
 
-				if ((greenLeft + 2) > (fundoWidth - greenWidth)) {
-					green.style.left = fundoWidth - greenWidth;
-				} else {
-					green.style.left = greenLeft + 2;
-				}
-				if ((((greenLeft + greenWidth) > hookX) && ((greenLeft + greenWidth) < (hookX + parseInt(getComputedStyle(hook).width)))) && ((greenTop > hookY)) && (greenTop < hookY + parseInt(getComputedStyle(hook).height)) && fisguei == false) {
-					fisguei = true;
-					clearInterval(FSgreen);
-					clearInterval(drop);
-					call = setInterval("Recall()", 15)
-					document.getElementById("green").remove();
-					let greenRedo = setTimeout("fish('green')", 10000);
-					scorePoints += 50
-					score.innerHTML = `HI-Score: ${HS1} - Score: ${scorePoints}`
-					document.getElementById("gasp").play();
-				} else {
-					if (greenLeft == fundoWidth - greenWidth) {
-						document.getElementById("green").style.transform = "scaleX(-1)"
-						clearInterval(FSgreen);
-						FSgreen = setInterval("greenFSwimL()", greenSPD);
-					}
-				}
-			}
-		}
-		function greenFSwimL() {
-			if (game == "ongoing") {
-				let greenLeft = parseInt(getComputedStyle(green).left);
-				let fundoWidth = parseInt(getComputedStyle(fundo).width);
-				let greenWidth = parseInt(getComputedStyle(green).width);
-				let fundoLeft = parseInt(getComputedStyle(fundo).left);
-				let hookX = parseInt(getComputedStyle(hook).left) + parseInt(getComputedStyle(boat).left);
-				let greenTop = parseInt(getComputedStyle(green).top)
-				let hookY = parseInt(getComputedStyle(hook).top) + parseInt(getComputedStyle(boat).top)
-				if ((greenLeft - 2) < 0) {
-					green.style.left = 0
-				} else {
-					green.style.left = greenLeft - 2;
-				}
-				if (((greenLeft > hookX) && ((greenLeft) < (hookX + parseInt(getComputedStyle(hook).width)))) && ((greenTop > hookY)) && (greenTop < hookY + parseInt(getComputedStyle(hook).height)) && fisguei == false) {
-					fisguei = true;
-					clearInterval(FSgreen);
-					clearInterval(drop);
-					call = setInterval("Recall()", 15)
-					document.getElementById("green").remove();
-					let greenRedo = setTimeout("fish('green')", 10000);
-					scorePoints += 50
-					score.innerHTML = `HI-Score: ${HS1} - Score: ${scorePoints}`
-					document.getElementById("gasp").play();
-				} else {
-					if (greenLeft == 0) {
-						document.getElementById("green").style.transform = "scaleX(1)";
-						clearInterval(FSgreen);
-						FSgreen = setInterval("greenFSwimR()", greenSPD);
-					}
-				}
-			}
-		}
-		function blackFSwimR() {
-			if (game == "ongoing") {
-				let blackLeft = parseInt(getComputedStyle(black).left);
-				let fundoWidth = parseInt(getComputedStyle(fundo).width);
-				let blackWidth = parseInt(getComputedStyle(black).width);
-				let hookX = parseInt(getComputedStyle(hook).left) + parseInt(getComputedStyle(boat).left);
-				let blackTop = parseInt(getComputedStyle(black).top)
-				let hookY = parseInt(getComputedStyle(hook).top) + parseInt(getComputedStyle(boat).top)
-				if ((blackLeft + 2) > (fundoWidth - blackWidth)) {
-					black.style.left = fundoWidth - blackWidth;
-				} else {
-					black.style.left = blackLeft + 2;
-				}
-				if ((((blackLeft + blackWidth) > hookX) && ((blackLeft + blackWidth) < (hookX + parseInt(getComputedStyle(hook).width)))) && ((blackTop > hookY)) && (blackTop < hookY + parseInt(getComputedStyle(hook).height)) && fisguei == false) {
-					fisguei = true;
-					clearInterval(FSblack);
-					clearInterval(drop);
-					call = setInterval("Recall()", 15)
-					document.getElementById("black").remove();
-					let blackRedo = setTimeout("fish('black')", 10000);
-					scorePoints += 25
-					score.innerHTML = `HI-Score: ${HS1} - Score: ${scorePoints}`
-				} else {
-					if (blackLeft == fundoWidth - blackWidth) {
-						document.getElementById("black").style.transform = "scaleX(-1)"
-						clearInterval(FSblack);
-						FSblack = setInterval("blackFSwimL()", blackSPD);
-					}
-				}
-			}
-		}
-		function blackFSwimL() {
-			if (game == "ongoing") {
-				let blackLeft = parseInt(getComputedStyle(black).left);
-				let fundoWidth = parseInt(getComputedStyle(fundo).width);
-				let blackWidth = parseInt(getComputedStyle(black).width);
-				let fundoLeft = parseInt(getComputedStyle(fundo).left);
-				let hookX = parseInt(getComputedStyle(hook).left) + parseInt(getComputedStyle(boat).left);
-				let blackTop = parseInt(getComputedStyle(black).top)
-				let hookY = parseInt(getComputedStyle(hook).top) + parseInt(getComputedStyle(boat).top)
-				if ((blackLeft - 2) < 0) {
-					black.style.left = 0
-				} else {
-					black.style.left = blackLeft - 2;
-				}
-				if (((blackLeft > hookX) && ((blackLeft) < (hookX + parseInt(getComputedStyle(hook).width)))) && ((blackTop > hookY)) && (blackTop < hookY + parseInt(getComputedStyle(hook).height)) && fisguei == false) {
-					fisguei = true;
-					clearInterval(FSblack);
-					clearInterval(drop);
-					call = setInterval("Recall()", 15)
-					document.getElementById("black").remove();
-					let blackRedo = setTimeout("fish('black')", 10000);
-					scorePoints += 25
-					score.innerHTML = `HI-Score: ${HS1} - Score: ${scorePoints}`
-				} else {
-					if (blackLeft == 0) {
-						document.getElementById("black").style.transform = "scaleX(1)";
-						clearInterval(FSblack);
-						FSblack = setInterval("blackFSwimR()", blackSPD);
-					}
-				}
-			}
-		}
-		function whiteFSwimR() {
-			if (game == "ongoing") {
-				let whiteLeft = parseInt(getComputedStyle(white).left);
-				let fundoWidth = parseInt(getComputedStyle(fundo).width);
-				let whiteWidth = parseInt(getComputedStyle(white).width);
-				let hookX = parseInt(getComputedStyle(hook).left) + parseInt(getComputedStyle(boat).left);
-				let whiteTop = parseInt(getComputedStyle(white).top)
-				let hookY = parseInt(getComputedStyle(hook).top) + parseInt(getComputedStyle(boat).top)
-				if ((whiteLeft + 2) > (fundoWidth - whiteWidth)) {
-					white.style.left = fundoWidth - whiteWidth;
-				} else {
-					white.style.left = whiteLeft + 2;
-				}
-				if ((((whiteLeft + whiteWidth) > hookX) && ((whiteLeft + whiteWidth) < (hookX + parseInt(getComputedStyle(hook).width)))) && ((whiteTop > hookY)) && (whiteTop < hookY + parseInt(getComputedStyle(hook).height)) && fisguei == false) {
-					fisguei = true;
-					clearInterval(FSwhite);
-					clearInterval(drop);
-					call = setInterval("Recall()", 15)
-					document.getElementById("white").remove();
-					let whiteRedo = setTimeout("fish('white')", 10000);
-					scorePoints += 20
-					score.innerHTML = `HI-Score: ${HS1} - Score: ${scorePoints}`
-				} else {
-					if (whiteLeft == fundoWidth - whiteWidth) {
-						document.getElementById("white").style.transform = "scaleX(-1)"
-						clearInterval(FSwhite);
-						FSwhite = setInterval("whiteFSwimL()", whiteSPD);
-					}
-				}
-			}
-		}
-		function whiteFSwimL() {
-			if (game == "ongoing") {
-				let whiteLeft = parseInt(getComputedStyle(white).left);
-				let fundoWidth = parseInt(getComputedStyle(fundo).width);
-				let whiteWidth = parseInt(getComputedStyle(white).width);
-				let fundoLeft = parseInt(getComputedStyle(fundo).left);
-				let hookX = parseInt(getComputedStyle(hook).left) + parseInt(getComputedStyle(boat).left);
-				let whiteTop = parseInt(getComputedStyle(white).top)
-				let hookY = parseInt(getComputedStyle(hook).top) + parseInt(getComputedStyle(boat).top)
-				if ((whiteLeft - 2) < 0) {
-					white.style.left = 0
-				} else {
-					white.style.left = whiteLeft - 2;
-				}
-				if (((whiteLeft > hookX) && ((whiteLeft) < (hookX + parseInt(getComputedStyle(hook).width)))) && ((whiteTop > hookY)) && (whiteTop < hookY + parseInt(getComputedStyle(hook).height)) && fisguei == false) {
-					fisguei = true;
-					clearInterval(FSwhite);
-					clearInterval(drop);
-					call = setInterval("Recall()", 15)
-					document.getElementById("white").remove();
-					let whiteRedo = setTimeout("fish('white')", 10000);
-					scorePoints += 20
-					score.innerHTML = `HI-Score: ${HS1} - Score: ${scorePoints}`
-				} else {
-					if (whiteLeft == 0) {
-						document.getElementById("white").style.transform = "scaleX(1)";
-						clearInterval(FSwhite);
-						FSwhite = setInterval("whiteFSwimR()", whiteSPD);
-					}
-				}
-			}
-		}
-		let boatImg = setInterval(() => {
-			switch (fisguei) {
-				case true:
-					document.getElementById("boat").style.backgroundImage = "url(./imagens/boatfisguei.png)"
-					break;
-				case false:
-					document.getElementById("boat").style.backgroundImage = "url(./imagens/boatfishing.png)"
-					break;
-				case "return":
-					document.getElementById("boat").style.backgroundImage = "url(./imagens/boatmiss.png)"
-			}
-		}, 1);
-		fish("red");
-		fish("blue");
-		fish("purple");
-		fish("orange");
-		fish("yellow");
-		fish("green");
-		fish("white");
-		fish("black");
-		let body = document.querySelector("body");
-		body.addEventListener("click", startgame);
-	</script>
+                if ((greenLeft + 2) > (fundoWidth - greenWidth)) {
+                    green.style.left = fundoWidth - greenWidth;
+                } else {
+                    green.style.left = greenLeft + 2;
+                }
+                if ((((greenLeft + greenWidth) > hookX) && ((greenLeft + greenWidth) < (hookX + parseInt(getComputedStyle(hook).width)))) && ((greenTop > hookY)) && (greenTop < hookY + parseInt(getComputedStyle(hook).height)) && fisguei == false) {
+                    fisguei = true;
+                    clearInterval(FSgreen);
+                    clearInterval(drop);
+                    call = setInterval("Recall()", 15)
+                    document.getElementById("green").remove();
+                    let greenRedo = setTimeout("fish('green')", 10000);
+                    scorePoints += 50
+                    score.innerHTML = `HI-Score: ${HS1} - Score: ${scorePoints}`
+                    document.getElementById("gasp").play();
+                } else {
+                    if (greenLeft == fundoWidth - greenWidth) {
+                        document.getElementById("green").style.transform = "scaleX(-1)"
+                        clearInterval(FSgreen);
+                        FSgreen = setInterval("greenFSwimL()", greenSPD);
+                    }
+                }
+            }
+        }
+        function greenFSwimL() {
+            if (game == "ongoing") {
+                let greenLeft = parseInt(getComputedStyle(green).left);
+                let fundoWidth = parseInt(getComputedStyle(fundo).width);
+                let greenWidth = parseInt(getComputedStyle(green).width);
+                let fundoLeft = parseInt(getComputedStyle(fundo).left);
+                let hookX = parseInt(getComputedStyle(hook).left) + parseInt(getComputedStyle(boat).left);
+                let greenTop = parseInt(getComputedStyle(green).top)
+                let hookY = parseInt(getComputedStyle(hook).top) + parseInt(getComputedStyle(boat).top)
+                if ((greenLeft - 2) < 0) {
+                    green.style.left = 0
+                } else {
+                    green.style.left = greenLeft - 2;
+                }
+                if (((greenLeft > hookX) && ((greenLeft) < (hookX + parseInt(getComputedStyle(hook).width)))) && ((greenTop > hookY)) && (greenTop < hookY + parseInt(getComputedStyle(hook).height)) && fisguei == false) {
+                    fisguei = true;
+                    clearInterval(FSgreen);
+                    clearInterval(drop);
+                    call = setInterval("Recall()", 15)
+                    document.getElementById("green").remove();
+                    let greenRedo = setTimeout("fish('green')", 10000);
+                    scorePoints += 50
+                    score.innerHTML = `HI-Score: ${HS1} - Score: ${scorePoints}`
+                    document.getElementById("gasp").play();
+                } else {
+                    if (greenLeft == 0) {
+                        document.getElementById("green").style.transform = "scaleX(1)";
+                        clearInterval(FSgreen);
+                        FSgreen = setInterval("greenFSwimR()", greenSPD);
+                    }
+                }
+            }
+        }
+        function blackFSwimR() {
+            if (game == "ongoing") {
+                let blackLeft = parseInt(getComputedStyle(black).left);
+                let fundoWidth = parseInt(getComputedStyle(fundo).width);
+                let blackWidth = parseInt(getComputedStyle(black).width);
+                let hookX = parseInt(getComputedStyle(hook).left) + parseInt(getComputedStyle(boat).left);
+                let blackTop = parseInt(getComputedStyle(black).top)
+                let hookY = parseInt(getComputedStyle(hook).top) + parseInt(getComputedStyle(boat).top)
+                if ((blackLeft + 2) > (fundoWidth - blackWidth)) {
+                    black.style.left = fundoWidth - blackWidth;
+                } else {
+                    black.style.left = blackLeft + 2;
+                }
+                if ((((blackLeft + blackWidth) > hookX) && ((blackLeft + blackWidth) < (hookX + parseInt(getComputedStyle(hook).width)))) && ((blackTop > hookY)) && (blackTop < hookY + parseInt(getComputedStyle(hook).height)) && fisguei == false) {
+                    fisguei = true;
+                    clearInterval(FSblack);
+                    clearInterval(drop);
+                    call = setInterval("Recall()", 15)
+                    document.getElementById("black").remove();
+                    let blackRedo = setTimeout("fish('black')", 10000);
+                    scorePoints += 25
+                    score.innerHTML = `HI-Score: ${HS1} - Score: ${scorePoints}`
+                } else {
+                    if (blackLeft == fundoWidth - blackWidth) {
+                        document.getElementById("black").style.transform = "scaleX(-1)"
+                        clearInterval(FSblack);
+                        FSblack = setInterval("blackFSwimL()", blackSPD);
+                    }
+                }
+            }
+        }
+        function blackFSwimL() {
+            if (game == "ongoing") {
+                let blackLeft = parseInt(getComputedStyle(black).left);
+                let fundoWidth = parseInt(getComputedStyle(fundo).width);
+                let blackWidth = parseInt(getComputedStyle(black).width);
+                let fundoLeft = parseInt(getComputedStyle(fundo).left);
+                let hookX = parseInt(getComputedStyle(hook).left) + parseInt(getComputedStyle(boat).left);
+                let blackTop = parseInt(getComputedStyle(black).top)
+                let hookY = parseInt(getComputedStyle(hook).top) + parseInt(getComputedStyle(boat).top)
+                if ((blackLeft - 2) < 0) {
+                    black.style.left = 0
+                } else {
+                    black.style.left = blackLeft - 2;
+                }
+                if (((blackLeft > hookX) && ((blackLeft) < (hookX + parseInt(getComputedStyle(hook).width)))) && ((blackTop > hookY)) && (blackTop < hookY + parseInt(getComputedStyle(hook).height)) && fisguei == false) {
+                    fisguei = true;
+                    clearInterval(FSblack);
+                    clearInterval(drop);
+                    call = setInterval("Recall()", 15)
+                    document.getElementById("black").remove();
+                    let blackRedo = setTimeout("fish('black')", 10000);
+                    scorePoints += 25
+                    score.innerHTML = `HI-Score: ${HS1} - Score: ${scorePoints}`
+                } else {
+                    if (blackLeft == 0) {
+                        document.getElementById("black").style.transform = "scaleX(1)";
+                        clearInterval(FSblack);
+                        FSblack = setInterval("blackFSwimR()", blackSPD);
+                    }
+                }
+            }
+        }
+        function whiteFSwimR() {
+            if (game == "ongoing") {
+                let whiteLeft = parseInt(getComputedStyle(white).left);
+                let fundoWidth = parseInt(getComputedStyle(fundo).width);
+                let whiteWidth = parseInt(getComputedStyle(white).width);
+                let hookX = parseInt(getComputedStyle(hook).left) + parseInt(getComputedStyle(boat).left);
+                let whiteTop = parseInt(getComputedStyle(white).top)
+                let hookY = parseInt(getComputedStyle(hook).top) + parseInt(getComputedStyle(boat).top)
+                if ((whiteLeft + 2) > (fundoWidth - whiteWidth)) {
+                    white.style.left = fundoWidth - whiteWidth;
+                } else {
+                    white.style.left = whiteLeft + 2;
+                }
+                if ((((whiteLeft + whiteWidth) > hookX) && ((whiteLeft + whiteWidth) < (hookX + parseInt(getComputedStyle(hook).width)))) && ((whiteTop > hookY)) && (whiteTop < hookY + parseInt(getComputedStyle(hook).height)) && fisguei == false) {
+                    fisguei = true;
+                    clearInterval(FSwhite);
+                    clearInterval(drop);
+                    call = setInterval("Recall()", 15)
+                    document.getElementById("white").remove();
+                    let whiteRedo = setTimeout("fish('white')", 10000);
+                    scorePoints += 20
+                    score.innerHTML = `HI-Score: ${HS1} - Score: ${scorePoints}`
+                } else {
+                    if (whiteLeft == fundoWidth - whiteWidth) {
+                        document.getElementById("white").style.transform = "scaleX(-1)"
+                        clearInterval(FSwhite);
+                        FSwhite = setInterval("whiteFSwimL()", whiteSPD);
+                    }
+                }
+            }
+        }
+        function whiteFSwimL() {
+            if (game == "ongoing") {
+                let whiteLeft = parseInt(getComputedStyle(white).left);
+                let fundoWidth = parseInt(getComputedStyle(fundo).width);
+                let whiteWidth = parseInt(getComputedStyle(white).width);
+                let fundoLeft = parseInt(getComputedStyle(fundo).left);
+                let hookX = parseInt(getComputedStyle(hook).left) + parseInt(getComputedStyle(boat).left);
+                let whiteTop = parseInt(getComputedStyle(white).top)
+                let hookY = parseInt(getComputedStyle(hook).top) + parseInt(getComputedStyle(boat).top)
+                if ((whiteLeft - 2) < 0) {
+                    white.style.left = 0
+                } else {
+                    white.style.left = whiteLeft - 2;
+                }
+                if (((whiteLeft > hookX) && ((whiteLeft) < (hookX + parseInt(getComputedStyle(hook).width)))) && ((whiteTop > hookY)) && (whiteTop < hookY + parseInt(getComputedStyle(hook).height)) && fisguei == false) {
+                    fisguei = true;
+                    clearInterval(FSwhite);
+                    clearInterval(drop);
+                    call = setInterval("Recall()", 15)
+                    document.getElementById("white").remove();
+                    let whiteRedo = setTimeout("fish('white')", 10000);
+                    scorePoints += 20
+                    score.innerHTML = `HI-Score: ${HS1} - Score: ${scorePoints}`
+                } else {
+                    if (whiteLeft == 0) {
+                        document.getElementById("white").style.transform = "scaleX(1)";
+                        clearInterval(FSwhite);
+                        FSwhite = setInterval("whiteFSwimR()", whiteSPD);
+                    }
+                }
+            }
+        }
+        let boatImg = setInterval(() => {
+            switch (fisguei) {
+                case true:
+                    document.getElementById("boat").style.backgroundImage = "url(./imagens/boatfisguei.png)"
+                    break;
+                case false:
+                    document.getElementById("boat").style.backgroundImage = "url(./imagens/boatfishing.png)"
+                    break;
+                case "return":
+                    document.getElementById("boat").style.backgroundImage = "url(./imagens/boatmiss.png)"
+            }
+        }, 1);
+        fish("red");
+        fish("blue");
+        fish("purple");
+        fish("orange");
+        fish("yellow");
+        fish("green");
+        fish("white");
+        fish("black");
+        let body = document.querySelector("body");
+        body.addEventListener("click", startgame);
+    </script>
 </body>
 
 </html>
