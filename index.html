@@ -81,7 +81,7 @@
             document.getElementById("mensagem").innerHTML = "AGUARDE O ANZOL VOLTAR PARA TENTAR DENOVO."
             document.getElementById("botoes").style.display = "flex";
             const timer = document.querySelector("#timer");
-            let timeSecond = 300;
+            let timeSecond = 5;
             displayTime(timeSecond);
             function displayTime(time) {
                 const min = Math.floor(time / 60);
@@ -119,6 +119,7 @@
                 let resetAvailable = setTimeout("buttonAppear()", 10000);
                 game = "finished";
                 document.getElementById("hehee").play();
+                documeng.getElementById("hehee").volume = 2;
             }
         }
         function highscore() {
