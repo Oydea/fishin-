@@ -233,7 +233,10 @@
 					rope.style.height = ropeHeight + 5;
 				}
 				if (hookTop == (fundoBottom - hookHeight)) {
+					let gruntChance = Math.floor(Math.random() * 10;
+					if((gruntChance == 4)||(gruntChance==8)){
 					document.getElementById("grunt").play();
+					}
 					fisguei = "return";
 					clearInterval(drop);
 					call = setInterval("Recall()", 15)
