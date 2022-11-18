@@ -25,6 +25,15 @@
 	<audio id="surprise" loop>
 		<source src="./sons/surprise.mp3">
 	</audio>
+	<audio id="grunt">
+		<source src="./sons/grunt.m4a">
+	</audio>
+	<audio id="gasp">
+		<source src="./sons/gasp.m4a">
+	</audio>
+	<audio id="hehee">
+		<source src="./sons/fish.m4a">
+	</audio>
 	<div id="frame">
 		<div class="window">
 			<div class="fundo" id="fundo">
@@ -108,7 +117,8 @@
 				rope.style.top = null;
 				fisguei = false;
 				let resetAvailable = setTimeout("buttonAppear()", 10000);
-				game = "finished"
+				game = "finished";
+				document.getElementById("hehee").play();
 			}
 		}
 		function highscore() {
@@ -223,6 +233,7 @@
 					rope.style.height = ropeHeight + 5;
 				}
 				if (hookTop == (fundoBottom - hookHeight)) {
+					document.getElementById("grunt").play();
 					fisguei = "return";
 					clearInterval(drop);
 					call = setInterval("Recall()", 15)
@@ -646,6 +657,7 @@
 					let greenRedo = setTimeout("fish('green')", 10000);
 					scorePoints += 50
 					score.innerHTML = `HI-Score: ${HS1} - Score: ${scorePoints}`
+					document.getElementById("gasp").play();
 				} else {
 					if (greenLeft == fundoWidth - greenWidth) {
 						document.getElementById("green").style.transform = "scaleX(-1)"
@@ -678,6 +690,7 @@
 					let greenRedo = setTimeout("fish('green')", 10000);
 					scorePoints += 50
 					score.innerHTML = `HI-Score: ${HS1} - Score: ${scorePoints}`
+					document.getElementById("gasp").play();
 				} else {
 					if (greenLeft == 0) {
 						document.getElementById("green").style.transform = "scaleX(1)";
